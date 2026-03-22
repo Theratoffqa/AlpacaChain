@@ -1,0 +1,37 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap');
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", sans-serif;
+  --font-logo: "Playfair Display", serif;
+  
+  --color-alpaca-purple: #8B5CF6;
+  --color-alpaca-purple-light: #A78BFA;
+  --color-alpaca-purple-dark: #6D28D9;
+  --color-alpaca-black: #0A0A0A;
+  --color-alpaca-grey: #1F2937;
+  --color-alpaca-grey-light: #374151;
+}
+
+@layer base {
+  body {
+    @apply font-sans text-white bg-alpaca-black;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display;
+  }
+}
+
+.logo-font {
+  font-family: "Playfair Display", serif;
+  letter-spacing: -0.02em;
+}
+
+.glass-card {
+  @apply bg-alpaca-grey/50 backdrop-blur-md border border-white/10 shadow-xl;
+}
+
+.alpaca-gradient {
+  background: linear-gradient(135deg, #6D28D9 0%, #8B5CF6 100%);
+}

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alpaquitay — Gestión de Contratos</title>
+  <meta name="description" content="Sistema de gestión de contratos con verificación SHA-256 y pagos integrados">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- ─── Auth Overlay ─── -->
+  <div id="auth-overlay" class="overlay">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="logo-icon">⬡</div>
+        <h1>Alpaquitay</h1>
+        <p class="auth-subtitle">Sistema de Contratos & Pagos</p>
+      </div>
+      <form id="auth-form">
+        <div class="input-group">
+          <label for="userId">ID de Usuario</label>
+          <input type="text" id="userId" value="test-user" required>
+        </div>
+        <div class="input-group">
+          <label for="apiKey">API Key</label>
+          <input type="password" id="apiKey" value="your-super-secret-key-change-in-production" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="auth-btn">
+          <span>Ingresar</span>
+          <span class="btn-loader hidden"></span>
+        </button>
+      </form>
+      <p id="auth-error" class="error-msg hidden"></p>
+    </div>
+  </div>
+
+  <!-- ─── Main App ─── -->
+  <div id="app" class="hidden">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo-icon small">⬡</div>
+        <span class="header-title">Alpaquitay</span>
+      </div>
+      <div class="header-right">
+        <span id="user-badge" class="badge badge-green"></span>
+        <button id="logout-btn" class="btn btn-ghost btn-sm">Salir</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- ─── Upload Section ─── -->
+      <section class="card" id="upload-section">
+        <div class="card-header">
+          <h2>📄 Subir Contrato</h2>
+        </div>
+        <div class="card-body">
+          <!-- Tab Switcher -->
+          <div class="tab-switcher">
+            <button class="tab active" data-tab="file-tab">Archivo</button>
+            <button class="tab" data-tab="text-tab">Texto</button>
+          </div>
+
+          <!-- File Upload Tab -->
+          <div id="file-tab" class="tab-content active">
+            <div class="drop-zone" id="drop-zone">
+              <div class="drop-zone-icon">📁</div>
+              <p>Arrastra tu archivo aquí o <strong>haz clic</strong></p>
+              <p class="drop-zone-hint">PDF o TXT — máx. 10MB</p>
+              <input type="file" id="file-input" accept=".pdf,.txt" hidden>
+            </div>
+            <div id="file-preview" class="file-preview hidden">
+              <span id="file-name" class="file-name"></span>
+              <span id="file-size" class="file-size"></span>
+              <button id="file-remove" class="btn btn-ghost btn-sm">✕</button>
+            </div>
+            <button id="upload-file-btn" class="btn btn-primary btn-full hidden">
+              <span>Subir Archivo</span>
+              <span class="btn-loader hidden"></span>
+            </button>
+          </div>
+
+          <!-- Text Upload Tab -->
+          <div id="text-tab" class="tab-content hidden">
+            <div class="input-group">
+              <label for="contract-title">Título del contrato</label>
+              <input type="text" id="contract-title" placeholder="Ej: Contrato de Arrendamiento 2026">
+            </div>
+            <div class="input-group">
+              <label for="contract-text">Contenido</label>
+              <textarea id="contract-text" rows="6" placeholder="Pega o escribe el texto del contrato aquí..."></textarea>
+            </div>
+            <button id="upload-text-btn" class="btn btn-primary btn-full">
+              <span>Subir Texto</span>
+              <span class="btn-loader hidden"></span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─── Result Section (appears after upload) ─── -->
+      <section class="card hidden" id="result-section">
+        <div class="card-header">
+          <h2>🔐 Resultado</h2>
+          <span id="result-status" class="badge"></span>
+        </div>
+        <div class="card-body">
+          <div class="result-grid">
+            <div class="result-item">
+              <span class="result-label">ID del Contrato</span>
+              <span class="result-value mono" id="result-id"></span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Nombre</span>
+              <span class="result-value" id="result-name"></span>
+            </div>
+            <div class="result-item full-width">
+              <span class="result-label">Hash SHA-256</span>
+              <div class="hash-display">
+                <code class="result-value mono" id="result-hash"></code>
+                <button class="btn btn-ghost btn-sm" id="copy-hash-btn" title="Copiar hash">📋</button>
+              </div>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Fecha de Hash</span>
+              <span class="result-value" id="result-date"></span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Estado</span>
+              <span class="result-value" id="result-contract-status"></span>
+            </div>
+          </div>
+          <div class="result-actions">
+            <button id="verify-btn" class="btn btn-secondary">
+              <span>🔍 Verificar Integridad</span>
+              <span class="btn-loader hidden"></span>
+            </button>
+            <button id="new-contract-btn" class="btn btn-ghost">+ Nuevo Contrato</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─── Verification Section ─── -->
+      <section class="card hidden" id="verify-section">
+        <div class="card-header">
+          <h2>🔍 Verificación de Integridad</h2>
+        </div>
+        <div class="card-body">
+          <div id="verify-result" class="verify-result"></div>
+        </div>
+      </section>
+
+      <!-- ─── Contracts List ─── -->
+      <section class="card" id="contracts-section">
+        <div class="card-header">
+          <h2>📋 Contratos</h2>
+          <button id="refresh-btn" class="btn btn-ghost btn-sm">↻ Refrescar</button>
+        </div>
+        <div class="card-body">
+          <div id="contracts-list" class="contracts-list">
+            <p class="empty-state">Cargando contratos...</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
